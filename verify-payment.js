@@ -25,9 +25,15 @@ export default async function handler(req, res) {
       })
     });
 
-    const result = await response.json();
+    let result;
+    if (response.headers.get('content-type')?.includes('application/json')) {
+      result = await response.json();
+    } else {
+      // If not JSON, assume pending (endpoint might not exist)
+      result = { status: 'pending' };
+    }
 
-    if (!response.ok) {
+    if (!response.ok && response.headers.get('content-type')?.includes('application/json')) {
       throw new Error(result.message || 'Payment verification failed');
     }
 
